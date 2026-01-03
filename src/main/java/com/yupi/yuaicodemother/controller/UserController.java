@@ -5,10 +5,13 @@ import com.yupi.yuaicodemother.common.BaseResponse;
 import com.yupi.yuaicodemother.common.ResultUtils;
 import com.yupi.yuaicodemother.exception.ErrorCode;
 import com.yupi.yuaicodemother.exception.ThrowUtils;
+import com.yupi.yuaicodemother.model.dto.UserLoginRequest;
 import com.yupi.yuaicodemother.model.dto.UserRegisterRequest;
 import com.yupi.yuaicodemother.model.entity.User;
+import com.yupi.yuaicodemother.model.vo.LoginUserVO;
 import com.yupi.yuaicodemother.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +29,7 @@ public class UserController {
     private UserService userService;
 
     // 注册方法
-    @PostMapping("register")
+    @PostMapping("/register")
     public BaseResponse<Long> register(@RequestBody UserRegisterRequest userRegisterRequest) {
         // 检查错误，并用抛出工具抛出错误
         ThrowUtils.throwIf(userRegisterRequest == null, ErrorCode.PARAMS_ERROR);
@@ -54,6 +57,27 @@ public class UserController {
     @PostMapping("save")
     public boolean save(@RequestBody User user) {
         return userService.save(user);
+    }
+
+    // 用户登录
+
+    /**
+     * 用户登录
+     *
+     * @param userLoginRequest 用户登录请求
+     * @param request 请求对象
+     * @return 脱敏后的登录信息
+     */
+    @PostMapping("/login")
+    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        // 参数判断不能为空
+        ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
+        // 获取账号密码
+        String userAccount = userLoginRequest.getUserAccount();
+        String userPassword = userLoginRequest.getUserPassword();
+        // 调用 service 方法
+        LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(loginUserVO);
     }
 
     /**

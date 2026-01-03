@@ -1,5 +1,6 @@
 package com.yupi.yuaicodemother.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
@@ -8,9 +9,13 @@ import com.yupi.yuaicodemother.exception.ErrorCode;
 import com.yupi.yuaicodemother.mapper.UserMapper;
 import com.yupi.yuaicodemother.model.entity.User;
 import com.yupi.yuaicodemother.model.enums.UserRoleEnum;
+import com.yupi.yuaicodemother.model.vo.LoginUserVO;
 import com.yupi.yuaicodemother.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+
+import static com.yupi.yuaicodemother.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户 服务层实现。
@@ -61,6 +66,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         // 盐值，混淆密码
         final String SALT = "yupi";
         return DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+    }
+
+    @Override
+    public LoginUserVO getLoginUserVO(User user) {
+        // 如果 user 为空直接返回空
+        if(user == null) return null;
+        // 否则返回脱敏后的 VO
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtil.copyProperties(user, loginUserVO);
+        return loginUserVO;
+    }
+
+    @Override
+    public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+        // 1. 校验参数
+        if (StrUtil.hasBlank(userAccount, userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+
+        }
+        // 账号长度，密码长度校验
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
+        }
+        if (userPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
+        }
+
+        // 2. 密码校验：加密之后和数据库比较
+        String encryptPassword = getEncryptPassword(userPassword);
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = this.mapper.selectOneByQuery(queryWrapper);
+
+        // 3. 查看用户是否存在
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或者密码错误");
+        }
+        // 4. 如果用户存在记录用户的状态
+            request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        return this.getLoginUserVO(user);
     }
 
 
