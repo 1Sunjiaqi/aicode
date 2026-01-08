@@ -3,6 +3,8 @@ package com.yupi.yuaicodemother.core;
 import com.yupi.yuaicodemother.ai.AiCodeGeneratorService;
 import com.yupi.yuaicodemother.ai.model.HtmlCodeResult;
 import com.yupi.yuaicodemother.ai.model.MultiFileCodeResult;
+import com.yupi.yuaicodemother.core.parser.CodeParserExecutor;
+import com.yupi.yuaicodemother.core.saver.CodeFileSaverExecutor;
 import com.yupi.yuaicodemother.exception.BusinessException;
 import com.yupi.yuaicodemother.exception.ErrorCode;
 import com.yupi.yuaicodemother.model.enums.CodeGenTypeEnum;
@@ -22,6 +24,114 @@ public class AiCodeGeneratorFacade {
     @Resource
     private AiCodeGeneratorService aiCodeGeneratorService;
 
+
+    /**
+     * 通用流式代码处理方法
+     *
+     * @param codeStream  代码流
+     * @param codeGenType 代码生成类型
+     * @return 流式响应
+     */
+    private Flux<String> processCodeStream(Flux<String> codeStream, CodeGenTypeEnum codeGenType) {
+        StringBuilder codeBuilder = new StringBuilder();
+        return codeStream.doOnNext(chunk -> {
+            // 实时收集代码片段
+            codeBuilder.append(chunk);
+        }).doOnComplete(() -> {
+            // 流式返回完成后保存代码
+            try {
+                String completeCode = codeBuilder.toString();
+                // 使用执行器解析代码
+                Object parsedResult = CodeParserExecutor.executeParser(completeCode, codeGenType);
+                // 使用执行器保存代码
+                File savedDir = CodeFileSaverExecutor.executeSaver(parsedResult, codeGenType);
+                log.info("保存成功，路径为：" + savedDir.getAbsolutePath());
+            } catch (Exception e) {
+                log.error("保存失败: {}", e.getMessage());
+            }
+        });
+    }
+
+
+    /**
+     * 统一入口：根据类型生成并保存代码
+     *
+     * @param userMessage     用户提示词
+     * @param codeGenTypeEnum 生成类型
+     * @return 保存的目录
+     */
+    public File generateAndSaveCode(String userMessage, CodeGenTypeEnum codeGenTypeEnum) {
+        if (codeGenTypeEnum == null) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
+        }
+        return switch (codeGenTypeEnum) {
+            case HTML -> {
+                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(userMessage);
+                yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.HTML);
+            }
+            case MULTI_FILE -> {
+                MultiFileCodeResult result = aiCodeGeneratorService.generateMultiFileCode(userMessage);
+                yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.MULTI_FILE);
+            }
+            default -> {
+                String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, errorMessage);
+            }
+        };
+    }
+
+    /**
+     * 统一入口：根据类型生成并保存代码（流式）
+     *
+     * @param userMessage     用户提示词
+     * @param codeGenTypeEnum 生成类型
+     */
+    public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum) {
+        if (codeGenTypeEnum == null) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
+        }
+        return switch (codeGenTypeEnum) {
+            case HTML -> {
+                Flux<String> codeStream = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);
+                yield processCodeStream(codeStream, CodeGenTypeEnum.HTML);
+            }
+            case MULTI_FILE -> {
+                Flux<String> codeStream = aiCodeGeneratorService.generateMultiFileCodeStream(userMessage);
+                yield processCodeStream(codeStream, CodeGenTypeEnum.MULTI_FILE);
+            }
+            default -> {
+                String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, errorMessage);
+            }
+        };
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+*/
 /**
  * 根据用户消息和代码生成类型生成并保存代码文件
  *
@@ -29,7 +139,8 @@ public class AiCodeGeneratorFacade {
  * @param codeGenTypeEnum 代码生成类型枚举
  * @return 生成的代码文件对象
  * @throws BusinessException 当代码生成类型为空或不支持时抛出业务异常
- */
+ *//*
+
     public File generateAndSaveCode(String userMessage, CodeGenTypeEnum codeGenTypeEnum) {
     // 检查代码生成类型是否为空，若为空则抛出参数异常
         if (codeGenTypeEnum == null) {
@@ -48,12 +159,14 @@ public class AiCodeGeneratorFacade {
             }
         };
     }
-    /**
+    */
+/**
      * 统一入口：根据类型生成并保存代码（流式）
      *
      * @param userMessage     用户提示词
      * @param codeGenTypeEnum 生成类型
-     */
+     *//*
+
     public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum) {
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
@@ -69,12 +182,14 @@ public class AiCodeGeneratorFacade {
     }
 
 
-    /**
+    */
+/**
      * 生成 HTML 模式的代码并保存（流式）
      *
      * @param userMessage 用户提示词
      * @return 保存的目录
-     */
+     *//*
+
     private Flux<String> generateAndSaveHtmlCodeStream(String userMessage) {
         Flux<String> result = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);// 一点一点的吐出来
         // 当流式返回生成代码完成后，再保存代码
@@ -98,12 +213,14 @@ public class AiCodeGeneratorFacade {
                 });
     }
 
-    /**
+    */
+/**
      * 生成多文件模式的代码并保存（流式）
      *
      * @param userMessage 用户提示词
      * @return 保存的目录
-     */
+     *//*
+
     private Flux<String> generateAndSaveMultiFileCodeStream(String userMessage) {
         Flux<String> result = aiCodeGeneratorService.generateMultiFileCodeStream(userMessage);
         // 当流式返回生成代码完成后，再保存代码
@@ -128,12 +245,14 @@ public class AiCodeGeneratorFacade {
     }
 
 
-    /**
+    */
+/**
  * 生成并保存HTML文件的方法
  *
  * @param userMessage 用户输入的消息，用于生成对应的HTML代码
  * @return File 返回保存后的HTML文件对象
- */
+ *//*
+
 
     // 调用AI代码生成服务生成HTML代码
     private File generateAndSaveHtml(String userMessage) {
@@ -145,4 +264,6 @@ public class AiCodeGeneratorFacade {
         MultiFileCodeResult multiFileCodeResult = aiCodeGeneratorService.generateMultiFileCode(userMessage);
         return CodeFileSaver.saveMultiFileCodeResult(multiFileCodeResult);
     }
+*/
+
 }
