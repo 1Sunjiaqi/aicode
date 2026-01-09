@@ -20,7 +20,7 @@ class AiCodeGeneratorFacadeTest {
 
     @Test
     void generateAndSaveCodeStream() {
-        Flux<String> codeStream =  aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个登录页面，总共不超过20行", CodeGenTypeEnum.HTML);
+        Flux<String> codeStream =  aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个登录页面，总共不超过20行", CodeGenTypeEnum.HTML, appId);
         List<String> result = codeStream.collectList().block();
         // 拼接字符串
         String resultStr = String.join("\n", result);
