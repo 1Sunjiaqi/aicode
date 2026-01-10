@@ -1,15 +1,15 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
+import { API_BASE_URL } from '@/config/env'
 
 // 创建 Axios 实例
 const myAxios = axios.create({
-  baseURL: 'http://localhost:8123/api',
+  baseURL: API_BASE_URL,
   timeout: 60000,
-  withCredentials: true, // 要求携带凭证，其实就是请求拦截器的核心功能之一
+  withCredentials: true,
 })
 
 // 全局请求拦截器
-// 返回的错误统一处理
 myAxios.interceptors.request.use(
   function (config) {
     // Do something before request is sent

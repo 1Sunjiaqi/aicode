@@ -52,6 +52,11 @@ public class UserController {
         // 比如说我们没有用new生成结果，而是用ResultUtils中success函数
     }
 
+    @GetMapping("/get/login")
+    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getLoginUserVO(loginUser));
+    }
 
     /**
      * 保存用户。
@@ -86,13 +91,6 @@ public class UserController {
         return ResultUtils.success(loginUserVO);
     }
 
-    // 获取登录用户
-    @GetMapping("/current")
-    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
-        // 调用 service 方法
-        User loginUser = userService.getLoginUser(request);
-        return ResultUtils.success(userService.getLoginUserVO(loginUser)); // 返回脱敏之后的方法
-    }
 
     // 用户登出
     @PostMapping("/logout")
