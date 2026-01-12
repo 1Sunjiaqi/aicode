@@ -100,11 +100,20 @@ export async function userLogout(options?: { [key: string]: any }) {
 }
 
 /** 此处后端没有提供注释 POST /user/register */
-export async function userRegister(
-  body: API.UserRegisterRequest,
-  options?: { [key: string]: any }
-) {
+export async function userRegister(body: API.UserRegisterRequest, options?: { [key: string]: any }) {
   return request<API.BaseResponseLong>('/user/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** 此处后端没有提供注释 POST /user/save */
+export async function save(body: API.User, options?: { [key: string]: any }) {
+  return request<boolean>('/user/save', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
