@@ -6,8 +6,6 @@ import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 class AiCodeGeneratorServiceTest {
 
@@ -16,7 +14,14 @@ class AiCodeGeneratorServiceTest {
 
     @Test
     void generateHtmlCode() {
-        HtmlCodeResult code = aiCodeGeneratorService.generateHtmlCode("请生成一个博客首页，不超过20行");
+        HtmlCodeResult code = aiCodeGeneratorService.generateHtmlCode(1,"请生成一个博客首页，不超过20行");
+        System.out.println(code);
+        code = aiCodeGeneratorService.generateHtmlCode(1,"不用生成代码，告诉我你刚才做了什么？");
+        System.out.println(code);
+
+        code = aiCodeGeneratorService.generateHtmlCode(2,"请生成一个工具网站，不超过20行");
+        System.out.println(code);
+        code = aiCodeGeneratorService.generateHtmlCode(2,"不用生成代码，告诉我你刚才做了什么？");
         System.out.println(code);
     }
 
