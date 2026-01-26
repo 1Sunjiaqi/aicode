@@ -94,10 +94,10 @@ public class AiCodeGeneratorServiceFactory {
                 .builder()
                 .id(appId)
                 .chatMemoryStore(redisChatMemoryStore)
-                .maxMessages(20)
+                .maxMessages(40)
                 .build();
         // 从数据库中加载对话历史到记忆中
-        chatHistoryService.loadChatHistoryToMemory(appId, chatMemory, 20);
+        chatHistoryService.loadChatHistoryToMemory(appId, chatMemory, 40);
         return switch (codeGenType) {
             // Vue 项目生成，使用工具调用和推理模型
             case VUE_PROJECT -> AiServices.builder(AiCodeGeneratorService.class)

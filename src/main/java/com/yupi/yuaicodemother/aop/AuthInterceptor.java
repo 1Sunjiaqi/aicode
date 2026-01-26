@@ -20,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 public class AuthInterceptor {
 
+
     @Resource
     private UserService userService;
 
