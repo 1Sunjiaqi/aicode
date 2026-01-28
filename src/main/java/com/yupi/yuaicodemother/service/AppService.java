@@ -2,6 +2,7 @@ package com.yupi.yuaicodemother.service;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
+import com.yupi.yuaicodemother.model.dto.app.AppAddRequest;
 import com.yupi.yuaicodemother.model.dto.app.AppQueryRequest;
 import com.yupi.yuaicodemother.model.entity.App;
 import com.yupi.yuaicodemother.model.entity.User;
@@ -28,6 +29,8 @@ public interface AppService extends IService<App> {
 
     // 网站部署
     String deployApp(Long appId, User loginUser);
+
+    Long createApp(AppAddRequest appAddRequest, User loginUser);
 
     void generateAppScreenshotAsync(Long appId, String appUrl);
 }
