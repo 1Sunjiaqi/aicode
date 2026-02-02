@@ -25,6 +25,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
@@ -274,6 +275,11 @@ public class AppController {
      * @return 精选应用列表
      */
     @PostMapping("/good/list/page/vo")
+    @Cacheable(
+            value = "good_app_page",
+            key = "T(com.yupi.yuaicodemother.utils.CacheKeyUtils).generateKey(#appQueryRequest)",
+            condition = "#appQueryRequest.pageNum <= 10"
+    )
     public BaseResponse<Page<AppVO>> listGoodAppVOByPage(@RequestBody AppQueryRequest appQueryRequest) {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 限制每页最多 20 个
@@ -285,7 +291,11 @@ public class AppController {
         QueryWrapper queryWrapper = appService.getQueryWrapper(appQueryRequest);
         // 分页查询
         Page<App> appPage = appService.page(Page.of(pageNum, pageSize), queryWrapper);
-        // 数据封装
+        // 数据封装#DataSourceSettings#
+        //#LocalDataSource: 0@localhost
+        //#BEGIN#
+        //<data-source source="LOCAL" name="0@localhost" uuid="eb88c887-f732-475a-9c55-27f741680901"><database-info product="Redis Standalone" version="8.4.0" jdbc-version="4.2" driver-name="Redis JDBC Driver" driver-version="1.5" dbms="REDIS" exact-version="8.4.0" exact-driver-version="1.5"><jdbc-catalog-is-schema>true</jdbc-catalog-is-schema></database-info><case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/><driver-ref>redis</driver-ref><synchronize>true</synchronize><jdbc-driver>jdbc.RedisDriver</jdbc-driver><jdbc-url>jdbc:redis://localhost:6379/0</jdbc-url><jdbc-additional-properties><property name="com.intellij.clouds.kubernetes.db.host.port"/><property name="com.intellij.clouds.kubernetes.db.enabled" value="false"/><property name="com.intellij.clouds.kubernetes.db.container.port"/></jdbc-additional-properties><secret-storage>master_key</secret-storage><schema-mapping><introspection-scope><node kind="schema" qname="@"/></introspection-scope></schema-mapping><working-dir>$ProjectFileDir$</working-dir></data-source>
+        //#END#
         Page<AppVO> appVOPage = new Page<>(pageNum, pageSize, appPage.getTotalRow());
         List<AppVO> appVOList = appService.getAppVOList(appPage.getRecords());
         appVOPage.setRecords(appVOList);
